@@ -35,7 +35,7 @@ SynthDef(\midiSynth, {
 
 	var env, sig;
 
-	env = EnvGen.kr(Env.adsr(0.01, 0.2, 0.02, 0.5), gate, doneAction: 2);
+	env = EnvGen.kr(Env.adsr(0.01, 0.2, 0.02, 0.0), gate, doneAction: 2);
 	sig = SinOsc.ar(midi.midicps) * env * amp;
 	sig = Pan2.ar(sig, pan);
 
@@ -64,6 +64,17 @@ SynthDef(\midiSynthAM, {
 }).add;
 )
 
+(
+SynthDef(\bass, {
+	|freq = 110, voices = 4, detune = 0.2; amp = 0.2, depth, gate = 1, pan = 0|
+
+	var env, sig;
+
+	env = EnvGen.kr(Env.adsr(3, 1, 1, 3), gate, doneAction: 2);
+	sig =
+
+}).add;
+}
 
 x = Synth(\pluck, [\freq, 330]);
 x.set(\freq, 550);
@@ -79,19 +90,17 @@ z.set(\gate, 0);
 (
 Pbind(
 	\instrument, \AMsynth,
-	\dur, 1,
+	\dur, 2,
 	\degree, Pseq([
-		[0,2,4],
-		[3,5,7],
-		[1,3,5],
-		[4,6,1]
+		[0,2,4,5],
+		[3,5,7,2],
 
 	], 3),
-	\modFreq, Pseq([0.5, 0.75, 1, 1.25, 1.5], inf),
 	\octave, 5,
-	\amp, 0.2
+	\amp, 0.05
 
 ).play;
+
 )
 
 
