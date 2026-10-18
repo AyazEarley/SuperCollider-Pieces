@@ -35,7 +35,6 @@ SynthDef(\bass, {
 
 	car = SinOsc.ar(freq);
 	mod = SinOsc.ar(modFreq);
-
 	env = EnvGen.kr(Env.adsr(5, 1, 1, 3), gate, doneAction: 2);
 
 	sig = SinOsc.ar(freq) * (1 + (mod * depth)) / (1 + depth);
@@ -55,11 +54,29 @@ SynthDef(\reverb, { |in = 0, out = 0, mix = 0.4, room = 0.8, damp = 0.5|
 )
 
 (
-SynthDef()
+SynthDef(\fm, {
+    arg freq=440, ratio=2, index=3, amp=0.3, gate=1, pan=0,
+        atk=0.1, dec=0.3, sus=0.5, rel=2;
 
+    var env, modEnv, mod, car, sig;
+
+    env = EnvGen.kr(Env.perc(atk, dur, 1, -6), doneAction: 2);
+
+    modEnv = EnvGen.kr(Env.perc(atk, modDur, 1, -4));
+
+    mod = SinOsc.ar(freq * ratio) * freq * ratio * index * modEnv;
+
+    car = SinOsc.ar(freq + mod);
+
+    sig = car * env * amp;
+
+    sig = Pan2.ar(sig, pan);
+
+    Out.ar(0, sig);
+}).add;
 )
 
-x = Synth(\bass, [\freq, 110]);
+x = Synth(\pluck, [\freq, 660]);
 x.set(\gate, 0);
 
 (
@@ -73,6 +90,68 @@ x.set(\gate, 0);
 Synth(\bass, [\freq, 32.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
 )
 
+
+Synth(\bass, [\freq, 44.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
+Synth(\bass, [\freq, 51.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
+Synth(\bass, [\freq, 49.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
+
+(
+
+~revBus = Bus.audio(s, 2);
+
+~srcGroup = Group.new;
+~fxGroup = Group.after(~srcGroup);
+
+~reverb = Synth(\reverb, [\in, ~revBus, \out, 0, \mix, 1.0], ~fxGroup);
+
+Routine {
+	Synth(\bass, [\freq, 32.midicps, \out, ~revBus, \amp, 0.03], ~srcGroup);
+	4.wait;
+	Synth(\bass, [\freq, 44.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
+	8.wait;
+	Synth(\bass, [\freq, 51.midicps, \out, ~revBus, \amp, 0.04], ~srcGroup);
+	4.wait;
+	Synth(\bass, [\freq, 49.midicps, \out, ~revBus, \amp, 0.02], ~srcGroup);
+	3.wait();
+	Pbind(
+		\instrument, \fm,
+		\ratio, 3,
+		\index, 3.5,
+		\dur, 3,
+		\degree, Pxrand([0,6,2,4,\r,\r], inf),
+		\octave, 5,
+		\amp, 0.001
+	).play;
+	3.wait();
+	Pbind(
+		\instrument, \fm,
+		\ratio, 3,
+		\index, 3.5,
+		\dur, 2.2,
+		\degree, Pxrand([0,6,2,1,4,\r,\r], inf),
+		\octave, 7,
+		\amp, 0.001
+	).play;
+	Pbind(
+		\instrument, \fm,
+		\ratio, 3,
+		\index, 3.5,
+		\dur, 2.4,
+		\degree, Pxrand([0,6,1,5,2,4,\r,\r], inf),
+		\octave, 7,
+		\amp, 0.001
+	).play;
+	Pbind(
+		\instrument, \fm,
+		\ratio, 3.345,
+		\index, 3.5,
+		\dur, 1.6,
+		\degree, Pxrand([0,3,6,1,5,2,4,\r,\r,\r], inf),
+		\octave, 7,
+		\amp, 0.005
+	).play;
+}.play
+)
 
 
 /*

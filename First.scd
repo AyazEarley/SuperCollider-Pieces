@@ -74,7 +74,7 @@ SynthDef(\bass, {
 	sig =
 
 }).add;
-}
+)
 
 x = Synth(\pluck, [\freq, 330]);
 x.set(\freq, 550);
